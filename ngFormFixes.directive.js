@@ -37,10 +37,10 @@ module.directive('ngForm', function ($parse) {
             for (var i = 0; i < $buttons.length; i++) {
                 for (var n = 0; n < $buttons[i].length; n++) {
                     var $current = $buttons[i][n];
-                    if ($current.type.toLowerCase() === 'submit') {
-                        return $current;
-                    }
-
+                    if ($current.type.toLowerCase() !== 'submit') continue;
+                    var $containingForm = angular.element($current).closest('form, [ng-form], [data-ng-form]');
+                    if ($element[0] !== $containingForm[0]) continue;
+                    return $current;
                 }
             }
         }
