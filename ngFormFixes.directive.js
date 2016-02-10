@@ -1,66 +1,52 @@
 var module = angular.module('ngFormFixes', []);
 
-module.directive('ngForm', function ($parse) {
-    return {
-        link: linkFunction
-    };
+module.directive('ngForm', function() {
+    return {link: linkFunction};
 
-    function linkFunction ($scope, $element, $attrs) {
-
-        var $submit_button = findSubmitButton();
+    function linkFunction($scope, $element, $attrs) {
+        var submit_button = findSubmitButton();
 
         // bind Enter key
         $element.bind('keydown', function (e) {
-            var keyCode = e.keyCode || e.which;
-            if (keyCode === 13) {
-                if ($attrs.ngSubmit) {
-                    $parse($attrs.ngSubmit)($scope);
-                    e.stopPropagation();
-                } else if ($submit_button) {
-                    $submit_button.click();
-                    e.stopPropagation();
-                }
-            }
-        });
-
-        // bind Submit click to run itself or ngSubmit
-        angular.element($submit_button).bind('click', function (e) {
-            if ($attrs.ngSubmit && angular.element(this).attr('ng-click') === undefined) {
-                $parse($attrs.ngSubmit)($scope);
+            if ((e.keyCode || e.which) !== 13) return;
+            if ($attrs.ngSubmit) {
+                $scope.$apply($attrs.ngSubmit);
+                e.stopPropagation();
+            } else if (submit_button) {
+                submit_button.click();
                 e.stopPropagation();
             }
         });
 
-        function findSubmitButton () {
-            var $buttons = [$element.find('button'), $element.find('input')];
+        // bind Submit click to run itself or ngSubmit
+        angular.element(submit_button).bind('click', function(e) {
+            if ($attrs.ngSubmit && angular.element(this).attr('ng-click') === undefined) {
+                $scope.$apply($attrs.ngSubmit);
+                e.stopPropagation();
+            }
+        });
 
-            for (var i = 0; i < $buttons.length; i++) {
-                for (var n = 0; n < $buttons[i].length; n++) {
-                    var $current = $buttons[i][n];
-                    if ($current.type.toLowerCase() !== 'submit') continue;
-                    var $containingForm = angular.element($current).closest('form, [ng-form], [data-ng-form]');
-                    if ($element[0] !== $containingForm[0]) continue;
-                    return $current;
-                }
+        function findSubmitButton() {
+            var current, $containingForm, buttons = $element.find('button, input');
+            for (var i = 0; i < buttons.length; i++) {
+              current = buttons[i];
+              if (current.type.toLowerCase() !== 'submit') continue;
+              $containingForm = angular.element(current).closest('form, [ng-form], [data-ng-form]');
+              if ($element[0] !== $containingForm[0]) continue;
+              return current;
             }
         }
     }
-
 });
 
-module.directive('onEnter', ['$parse', function ($parse) {
-    return {
-        link: function ($scope, $element, $attrs) {
-
-            $element.bind('keyup', function (e) {
-
-                var keyCode = e.keyCode || e.which;
-
-                if (keyCode === 13 && $attrs.onEnter) {
-                    $parse($attrs.onEnter)($scope);
-                }
-
-            });
-        }
-    };
-}]);
+module.directive('onEnter', function() {
+    return {link: linkFunction};
+    
+    function linkFunction($scope, $element, $attrs) {
+        $element.bind('keyup', function(e) {
+            if ((e.keyCode || e.which) === 13 && $attrs.onEnter) {
+                $scope.$apply($attrs.onEnter);
+            }
+        });
+    }
+});
