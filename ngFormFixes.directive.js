@@ -12,9 +12,11 @@ module.directive('ngForm', function() {
             if ($attrs.ngSubmit) {
                 $scope.$apply($attrs.ngSubmit);
                 e.stopPropagation();
+                e.preventDefault();
             } else if (submit_button) {
                 submit_button.click();
                 e.stopPropagation();
+                e.preventDefault();
             }
         });
 
@@ -23,6 +25,7 @@ module.directive('ngForm', function() {
             if ($attrs.ngSubmit && angular.element(this).attr('ng-click') === undefined) {
                 $scope.$apply($attrs.ngSubmit);
                 e.stopPropagation();
+                e.preventDefault();
             }
         });
 
